@@ -7,30 +7,34 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
 
 /**
  * AudioPlugin
  */
-public class AudioPlugin implements MethodCallHandler
+public class AudioPlugin implements MethodCallHandler,FlutterPlugin
 {
     private static final String TAG = AudioPlugin.class.getName();
 
     private MethodChannel channel;
+    //    private Registrar registrar;
     private static WeakHashMap<String, AudioPlayer> players = new WeakHashMap<>();
 
     /**
      * Plugin registration.
      */
-    public static void registerWith(Registrar registrar)
-    {
-        final MethodChannel channel = new MethodChannel(registrar.messenger(), "audio");
-        channel.setMethodCallHandler(new AudioPlugin(registrar, channel));
-    }
+//    public static void registerWith(Registrar registrar)
+//    {
+//        final MethodChannel channel = new MethodChannel(registrar.messenger(), "audio");
+//        channel.setMethodCallHandler(new AudioPlugin(channel));//registrar,
+//    }
 
-    public AudioPlugin(Registrar registrar, MethodChannel channel)
-    {
-        this.channel = channel;
-    }
+//    public AudioPlugin(Registrar registrar, MethodChannel channel)
+//    public AudioPlugin(MethodChannel channel)
+//    {
+//        this.channel = channel;
+////        this.registrar = registrar;
+//    }
 
     @Override
     public void onMethodCall(MethodCall call, Result result)
@@ -87,5 +91,16 @@ public class AudioPlugin implements MethodCallHandler
             return;
 
         players.put(uid, new AudioPlayer(channel, uid));
+    }
+
+    @Override
+    public void onDetachedFromEngine( FlutterPluginBinding binding) {
+        channel.setMethodCallHandler(null);
+    }
+
+    @Override
+    public void onAttachedToEngine( FlutterPluginBinding flutterPluginBinding) {
+        channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "audio");
+        channel.setMethodCallHandler(this);
     }
 }
